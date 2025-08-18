@@ -1,0 +1,101 @@
+Ok, mình hiểu rõ tình huống của bạn rồi 👌
+
+Bạn có một **nhánh phụ** (gọi là `exercise`) để làm bài tập:
+
+* Mỗi bài tập = 1 commit (8 commit tương ứng 8 bài).
+* Sau này, bạn có thể **chỉnh sửa lại** commit đó trong `exercise` (ví dụ sửa code, tối ưu).
+* Nhưng bạn muốn ở nhánh **main** chỉ lưu lại **commit lần đầu tiên của từng bài tập** → giống như “bài nộp gốc” để chấm, không bị ảnh hưởng nếu bạn chỉnh sửa sau.
+
+👉 Cách làm an toàn nhất là dùng **`git cherry-pick --no-commit`** + **tag commit ban đầu**.
+
+---
+
+## 🔹 Quy trình từng bước
+
+Giả sử bạn đã tạo repo và có nhánh `main` và `exercise`.
+
+### 1. Khởi tạo repo
+
+```bash
+git init myrepo
+cd myrepo
+echo "# Bài tập" > README.md
+git add README.md
+git commit -m "Init project"
+git branch -M main
+git checkout -b exercise
+```
+
+---
+
+### 2. Commit từng bài ở nhánh `exercise`
+
+Ví dụ:
+
+```bash
+# Bài 1
+echo "Code bài 1" > bai1.py
+git add bai1.py
+git commit -m "Bài 1"
+
+# Bài 2
+echo "Code bài 2" > bai2.py
+git add bai2.py
+git commit -m "Bài 2"
+
+# ... tiếp tục đến Bài 8
+```
+
+Lúc này `exercise` có 8 commit, mỗi commit là một bài.
+
+---
+
+### 3. Lưu dấu commit ban đầu (tag từng commit)
+
+Bạn nên gắn **tag** để ghi nhớ commit lần đầu của mỗi bài:
+
+```bash
+git log --oneline
+# ví dụ: a1b2c3 "Bài 1"
+#        d4e5f6 "Bài 2"
+
+git tag bai1_first a1b2c3
+git tag bai2_first d4e5f6
+# ... cho tới bai8
+```
+
+---
+
+### 4. Chép commit lần đầu sang `main`
+
+Quay lại nhánh `main`, rồi `cherry-pick` từng commit hash (hoặc tag):
+
+```bash
+git checkout main
+
+git cherry-pick bai1_first
+git cherry-pick bai2_first
+...
+git cherry-pick bai8_first
+```
+
+👉 Như vậy trong `main` sẽ có 8 commit (1 cho mỗi bài), lưu đúng **thời điểm commit ban đầu**.
+
+---
+
+### 5. Tiếp tục phát triển nhánh `exercise`
+
+Bạn có thể thoải mái sửa bài trên nhánh `exercise` (sửa file, amend commit, squash, rebase…).
+Nhánh `main` sẽ **không bị ảnh hưởng** vì nó chỉ giữ lại bản gốc lần đầu.
+
+---
+
+✅ Kết quả:
+
+* **main** = lưu trữ bản nộp ban đầu (mỗi commit = 1 bài lần đầu).
+* **exercise** = nơi bạn chỉnh sửa tự do.
+* Commit trên `main` không bị thay đổi, có thể dùng để chấm bài bất kỳ lúc nào.
+
+---
+
+👉 Bạn có muốn mình viết một **script bash tự động** (copy tất cả commit đầu tiên của nhánh `exercise` sang `main`) để không phải cherry-pick thủ công từng bài không?
