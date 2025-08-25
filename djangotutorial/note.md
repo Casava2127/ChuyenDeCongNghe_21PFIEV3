@@ -170,3 +170,120 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> # Tìm post không phải của Alice
 >>> not_alice = Post.objects.filter(~Q(author__name="Alice"))
 >>>
+
+
+
+
+
+
+Ok, mình phân tích lại toàn bộ dự án Django bạn vừa dựng nhé 👇
+
+---
+
+## 🎯 1. Dự án này tạo ra cái gì?
+
+Bạn đang làm một **Django project** tên là `djangotutorial` và đã tạo một app con tên là **`modelLayer`**.
+
+Trong `modelLayer`, bạn đã định nghĩa nhiều **model** khác nhau để minh họa các khái niệm cơ bản về **Django ORM** (Object-Relational Mapping).
+
+Cụ thể, migration `0001_initial.py` đã tạo ra các model:
+
+* `Author`
+* `Category`
+* `Person`
+* `AuthorProfile`
+* `Book`
+* `Student`
+* `Stock`
+* `Store`
+* `StudentProxy` (proxy model)
+
+Ngoài ra còn có các app mặc định (`admin`, `auth`, `sessions`, `contenttypes`) và các app bổ sung (`blog`, `polls`, `debug_toolbar`).
+
+---
+
+## ⚙️ 2. Các chức năng chính của dự án
+
+Dựa trên models, dự án này minh họa những chức năng sau:
+
+### 🔹 Models và Fields
+
+* **`Author` / `AuthorProfile`**: minh họa mối quan hệ **OneToOne**.
+* **`Book` / `Category`**: minh họa **ManyToMany** (một sách thuộc nhiều thể loại, một thể loại có nhiều sách).
+* **`Student` / `StudentProxy`**: minh họa **Proxy model** (một lớp kế thừa để thay đổi behavior mà không tạo bảng mới).
+* **`Stock` / `Store`**: minh họa **ForeignKey (Many-to-One)**.
+* **`Person`**: dùng để minh họa một model cơ bản với nhiều field.
+
+### 🔹 Các khái niệm ORM được áp dụng
+
+* **Field types**: CharField, IntegerField, DateField, ForeignKey, ManyToManyField, OneToOneField, …
+* **Field options**: `verbose_name`, `default`, `unique`, …
+* **Automatic primary key**: Django tự thêm trường `id` nếu không khai báo.
+* **Relationships**: OneToOne, ManyToOne, ManyToMany.
+* **Proxy model**: thay đổi behavior mà không cần thêm bảng DB mới.
+
+---
+
+## 🚀 3. Chạy dự án như thế nào?
+
+Bạn đã cài đặt và chạy migrations thành công → nghĩa là database (`db.sqlite3`) đã có các bảng.
+
+Để chạy dự án:
+
+```bash
+python manage.py runserver
+```
+
+→ Truy cập `http://127.0.0.1:8000/`
+
+### Các bước test chức năng:
+
+1. **Dùng Django shell** để thử CRUD:
+
+   ```bash
+   python manage.py shell
+   ```
+
+   ```python
+   from modelLayer.models import Author, Book, Category
+
+   # Tạo tác giả
+   a = Author.objects.create(name="Tác giả A")
+
+   # Tạo thể loại
+   c1 = Category.objects.create(name="Tiểu thuyết")
+   c2 = Category.objects.create(name="Khoa học")
+
+   # Tạo sách và gắn thể loại
+   b = Book.objects.create(title="Sách 1", author=a)
+   b.category.add(c1, c2)
+
+   print(Book.objects.all())
+   print(Book.objects.first().category.all())
+   ```
+
+   → Kiểm tra mối quan hệ nhiều-nhiều và one-to-many.
+
+2. **Dùng Django admin**:
+
+   * Tạo tài khoản admin:
+
+     ```bash
+     python manage.py createsuperuser
+     ```
+   * Đăng nhập `http://127.0.0.1:8000/admin/` để quản lý dữ liệu `Author`, `Book`, `Student`, …
+
+---
+
+## 📌 4. Mục đích tổng thể của dự án
+
+👉 Đây là một **project học tập** (tutorial project) nhằm:
+
+* Thực hành Django ORM và các loại quan hệ trong database.
+* Thấy rõ cách migration tạo bảng từ model.
+* Làm quen với CRUD qua Django shell và Django admin.
+* Chuẩn bị nền tảng để sau này phát triển app thực tế (blog, shop, quản lý sinh viên, …).
+
+---
+
+Bạn có muốn mình vẽ **sơ đồ quan hệ các model (ERD)** để nhìn rõ quan hệ giữa `Author – Book – Category – Store – Stock – Student` không?
